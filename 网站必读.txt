@@ -1,0 +1,5 @@
+PastPast V1作者:Miao
+1.admin系列的文件都是管理和站长的功能
+2.可以在"config"中修改基础配置
+3."admin_panel"是站长和管理员面板
+4.第一次打开建议先打开"install.php"重置一下

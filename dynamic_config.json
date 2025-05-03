@@ -1,0 +1,8 @@
+{
+    "PASTE_DIR": "pastes\/",
+    "USER_DIR": "users\/",
+    "MAX_PASTE_SIZE": 1048576,
+    "MIN_PASTE_LIFETIME": 86400,
+    "SESSION_TIMEOUT": 3600,
+    "ALLOW_REGISTER": 1
+}

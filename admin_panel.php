@@ -59,6 +59,34 @@ if (isset($_GET['delete_admin'])) {
     exit;
 }
 
+// 处理修改管理员用户名
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_username'])) {
+    $newUsername = trim($_POST['new_username']);
+    $currentUsername = $_SESSION['user'];
+    
+    if (empty($newUsername)) {
+        $_SESSION['username_change_error'] = '新用户名不能为空';
+        header("Location: admin_panel.php?tab=profile");
+        exit;
+    }
+    
+    $adminUsers = unserialize(file_get_contents($adminUsersFile));
+    if (isset($adminUsers[$newUsername])) {
+        $_SESSION['username_change_error'] = '用户名已存在';
+        header("Location: admin_panel.php?tab=profile");
+        exit;
+    }
+    
+    $adminUsers[$newUsername] = $adminUsers[$currentUsername];
+    unset($adminUsers[$currentUsername]);
+    file_put_contents($adminUsersFile, serialize($adminUsers));
+    
+    $_SESSION['user'] = $newUsername;
+    $_SESSION['username_change_success'] = '用户名修改成功';
+    header("Location: admin_panel.php?tab=profile");
+    exit;
+}
+
 // 加载数据
 $adminUsers = unserialize(file_get_contents($adminUsersFile));
 $currentTab = $_GET['tab'] ?? 'users';
@@ -104,6 +132,16 @@ $minValues = [
             <?php unset($_SESSION['password_change_success']); ?>
         <?php endif; ?>
 
+        <?php if (isset($_SESSION['username_change_error'])): ?>
+            <div class="alert alert-danger"><?= $_SESSION['username_change_error'] ?></div>
+            <?php unset($_SESSION['username_change_error']); ?>
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['username_change_success'])): ?>
+            <div class="alert alert-success"><?= $_SESSION['username_change_success'] ?></div>
+            <?php unset($_SESSION['username_change_success']); ?>
+        <?php endif; ?>
+
         <div class="row">
             <!-- 导航菜单 -->
             <div class="col-md-3">
@@ -120,6 +158,9 @@ $minValues = [
                         </a>
                         <a href="?tab=config" class="list-group-item list-group-item-action <?= $currentTab === 'config' ? 'active' : '' ?>">
                             系统配置
+                        </a>
+                        <a href="?tab=profile" class="list-group-item list-group-item-action <?= $currentTab === 'profile' ? 'active' : '' ?>">
+                            个人资料
                         </a>
                     <?php endif; ?>
                 </div>
@@ -344,6 +385,32 @@ $minValues = [
                             <?php endforeach; ?>
                         </tbody>
                     </table>
+
+                <?php elseif ($currentTab === 'profile' && $_SESSION['role'] === 'adminstrator'): ?>
+                    <!-- 修改个人资料 -->
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title mb-4">个人资料</h4>
+                            
+                            <?php if (isset($_SESSION['username_change_error'])): ?>
+                                <div class="alert alert-danger"><?= $_SESSION['username_change_error'] ?></div>
+                                <?php unset($_SESSION['username_change_error']); ?>
+                            <?php endif; ?>
+
+                            <?php if (isset($_SESSION['username_change_success'])): ?>
+                                <div class="alert alert-success"><?= $_SESSION['username_change_success'] ?></div>
+                                <?php unset($_SESSION['username_change_success']); ?>
+                            <?php endif; ?>
+                            
+                            <form method="post">
+                                <div class="mb-3">
+                                    <label for="new_username" class="form-label">新用户名</label>
+                                    <input type="text" class="form-control" id="new_username" name="new_username" required>
+                                </div>
+                                <button type="submit" name="change_username" class="btn btn-primary">修改用户名</button>
+                            </form>
+                        </div>
+                    </div>
                 <?php endif; ?>
             </div>
         </div>
